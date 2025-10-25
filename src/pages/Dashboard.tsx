@@ -83,8 +83,11 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <div className="text-lg">Loading nutrition data...</div>
+        <div className="text-sm text-muted-foreground max-w-md text-center">
+          If this takes more than a few seconds, you may need to create a Firestore index. Check the browser console for a link.
+        </div>
       </div>
     );
   }

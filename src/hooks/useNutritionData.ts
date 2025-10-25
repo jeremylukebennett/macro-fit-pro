@@ -22,14 +22,29 @@ export function useNutritionData() {
       orderBy('date', 'desc')
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as DailyNutrient[];
-      setDailyNutrients(data);
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      q, 
+      (snapshot) => {
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as DailyNutrient[];
+        setDailyNutrients(data);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Firestore error:', error);
+        if (error.code === 'failed-precondition') {
+          // Index not created yet - show helpful message
+          const indexUrl = error.message.match(/https:\/\/[^\s]+/)?.[0];
+          if (indexUrl) {
+            console.error('Please create the required Firestore index by visiting:', indexUrl);
+          }
+        }
+        setDailyNutrients([]);
+        setLoading(false);
+      }
+    );
 
     return unsubscribe;
   }, [user]);
