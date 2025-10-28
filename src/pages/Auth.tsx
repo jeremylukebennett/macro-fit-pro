@@ -37,63 +37,79 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center">
-              <Apple className="w-8 h-8 text-primary-foreground" />
-            </div>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-0 border-4 border-foreground">
+        {/* Left side - Branding */}
+        <div className="bg-primary p-12 lg:p-16 flex flex-col justify-between min-h-[400px]">
+          <div>
+            <Apple className="w-16 h-16 text-primary-foreground mb-8" />
+            <h1 className="text-5xl lg:text-6xl font-display text-primary-foreground leading-none mb-4">
+              NUTRITION<br />TRACKER
+            </h1>
+            <p className="text-primary-foreground/90 font-body text-lg">
+              PRECISION TRACKING FOR MODERN ATHLETES
+            </p>
           </div>
-          <CardTitle className="text-2xl font-bold">
-            {isSignUp ? 'Create Account' : 'Welcome Back'}
+          <div className="text-primary-foreground/60 text-sm font-body">
+            © 2025 · DATA-DRIVEN WELLNESS
+          </div>
+        </div>
+
+        {/* Right side - Form */}
+        <Card className="border-0 rounded-none shadow-none">
+        <CardHeader className="space-y-6 p-12">
+          <CardTitle className="text-4xl font-display">
+            {isSignUp ? 'CREATE ACCOUNT' : 'SIGN IN'}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base font-body">
             {isSignUp 
-              ? 'Start tracking your nutrition journey' 
-              : 'Sign in to access your nutrition tracker'}
+              ? 'Begin your data-driven journey' 
+              : 'Access your performance metrics'}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+        <CardContent className="p-12">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-3">
+              <Label htmlFor="email" className="text-sm font-bold uppercase tracking-wide">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="YOUR@EMAIL.COM"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="h-12 border-2 border-foreground/20 focus:border-primary font-body"
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+            <div className="space-y-3">
+              <Label htmlFor="password" className="text-sm font-bold uppercase tracking-wide">Password</Label>
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="h-12 border-2 border-foreground/20 focus:border-primary font-body"
                 required
                 minLength={6}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Please wait...' : isSignUp ? 'Sign Up' : 'Sign In'}
+            <Button type="submit" className="w-full mt-8" disabled={loading} size="lg">
+              {loading ? 'PROCESSING...' : isSignUp ? 'CREATE ACCOUNT' : 'SIGN IN'}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
+          <div className="mt-8 text-center">
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-primary hover:underline"
+              className="text-sm font-body hover:text-primary transition-colors border-b-2 border-transparent hover:border-primary pb-1"
             >
-              {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+              {isSignUp ? 'ALREADY HAVE AN ACCOUNT?' : 'CREATE NEW ACCOUNT'}
             </button>
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

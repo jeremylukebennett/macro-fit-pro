@@ -94,34 +94,33 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
+      <header className="border-b-4 border-foreground bg-card">
+        <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                <Apple className="w-6 h-6 text-primary-foreground" />
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-primary flex items-center justify-center border-2 border-foreground">
+                <Apple className="w-8 h-8 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">Nutrition Tracker</h1>
-                <p className="text-sm text-muted-foreground">{user?.email}</p>
+                <h1 className="text-3xl font-display leading-none">NUTRITION TRACKER</h1>
+                <p className="text-xs font-body uppercase tracking-wider text-muted-foreground mt-1">{user?.email}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={toggleTheme}>
                 {userSettings?.theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </Button>
-              <Button variant="outline" onClick={logout}>
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
+              <Button variant="outline" onClick={logout} size="sm">
+                <LogOut className="w-4 h-4" />
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 space-y-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap gap-2">
+      <main className="container mx-auto px-6 py-12 space-y-12">
+        <div className="flex flex-wrap items-center justify-between gap-6 pb-8 border-b-2 border-foreground/10">
+          <div className="flex flex-wrap gap-3">
             {(['prev', 'all', '3', '7', '30'] as RangeFilter[]).map((range) => (
               <Button
                 key={range}
@@ -129,22 +128,20 @@ export default function Dashboard() {
                 size="sm"
                 onClick={() => setRangeFilter(range)}
               >
-                {range === 'prev' ? 'Previous' : range === 'all' ? 'All' : `${range} days`}
+                {range === 'prev' ? 'PREV' : range === 'all' ? 'ALL' : `${range}D`}
               </Button>
             ))}
           </div>
-          <div className="flex gap-2">
-            <Button onClick={() => setIsTargetsModalOpen(true)} variant="outline">
-              <Target className="w-4 h-4 mr-2" />
-              Targets
+          <div className="flex gap-3">
+            <Button onClick={() => setIsTargetsModalOpen(true)} variant="outline" size="sm">
+              <Target className="w-4 h-4" />
             </Button>
-            <Button onClick={handleExportCSV} variant="outline">
-              <Download className="w-4 h-4 mr-2" />
-              Export CSV
+            <Button onClick={handleExportCSV} variant="outline" size="sm">
+              <Download className="w-4 h-4" />
             </Button>
-            <Button onClick={handleAddDay}>
+            <Button onClick={handleAddDay} size="sm">
               <Plus className="w-4 h-4 mr-2" />
-              Add Day
+              ADD DAY
             </Button>
           </div>
         </div>
