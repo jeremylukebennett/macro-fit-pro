@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { DailyNutrient } from '@/types/nutrition';
 import { computeDailyDeficit } from '@/utils/calculations';
+import { formatDisplayDate } from '@/utils/dateFormat';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pencil, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
@@ -111,7 +112,7 @@ export function EntriesTable({ entries, defaultCalories, onEdit, onDelete }: Ent
           <TableBody>
             {sortedEntries.map((entry) => (
               <TableRow key={entry.id}>
-                <TableCell className="font-medium">{entry.date}</TableCell>
+                <TableCell className="font-medium">{formatDisplayDate(entry.date)}</TableCell>
                 <TableCell className="text-right">{entry.calories}</TableCell>
                 <TableCell className="text-right font-medium">
                   {formatDeficit(computeDailyDeficit(entry, defaultCalories))}

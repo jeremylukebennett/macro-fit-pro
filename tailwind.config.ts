@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Bebas Neue', 'sans-serif'],
+        display: ['Rajdhani', 'sans-serif'],
         body: ['Barlow Condensed', 'sans-serif'],
       },
       colors: {
@@ -60,6 +60,30 @@ export default {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
+        electric: {
+          DEFAULT: "hsl(var(--electric))",
+          foreground: "hsl(var(--electric-foreground))",
+        },
+        sunshine: {
+          DEFAULT: "hsl(var(--sunshine))",
+          foreground: "hsl(var(--sunshine-foreground))",
+        },
+        ocean: {
+          DEFAULT: "hsl(var(--ocean))",
+          foreground: "hsl(var(--ocean-foreground))",
         },
       },
       borderRadius: {
