@@ -109,12 +109,20 @@ export function computeMedian(docs: DailyNutrient[], getter: (doc: DailyNutrient
   return values.length % 2 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
 }
 
+export function filterEntriesWithDrinks(docs: DailyNutrient[]): DailyNutrient[] {
+  return docs.filter(d => d.drinks !== undefined);
+}
+
 export function exportToCSV(docs: DailyNutrient[], targets: NutrientTargets): string {
-  const nutrients = ['calories', 'caloriesBurned', 'carbs', 'sugar', 'protein', 'fiber', 'fat', 'sodium', 'deficit'] as const;
+  const nutrients = ['calories', 'caloriesBurned', 'carbs', 'sugar', 'protein', 'fiber', 'fat', 'sodium', 'deficit', 'drinks'] as const;
   
   const averages = nutrients.map(n => {
     if (n === 'deficit') {
       return computeAverage(docs, d => computeDailyDeficit(d, targets.calories));
+    }
+    if (n === 'drinks') {
+      const drinksEntries = filterEntriesWithDrinks(docs);
+      return drinksEntries.length > 0 ? computeAverage(drinksEntries, d => d.drinks ?? 0) : 0;
     }
     return computeAverage(docs, d => (d[n] as number) || 0);
   });
@@ -122,6 +130,10 @@ export function exportToCSV(docs: DailyNutrient[], targets: NutrientTargets): st
   const medians = nutrients.map(n => {
     if (n === 'deficit') {
       return computeMedian(docs, d => computeDailyDeficit(d, targets.calories));
+    }
+    if (n === 'drinks') {
+      const drinksEntries = filterEntriesWithDrinks(docs);
+      return drinksEntries.length > 0 ? computeMedian(drinksEntries, d => d.drinks ?? 0) : 0;
     }
     return computeMedian(docs, d => (d[n] as number) || 0);
   });
@@ -138,7 +150,8 @@ export function exportToCSV(docs: DailyNutrient[], targets: NutrientTargets): st
   
   docs.forEach(doc => {
     const deficit = computeDailyDeficit(doc, targets.calories);
-    csv += `${doc.date},${doc.calories},${doc.caloriesBurned},${doc.carbs},${doc.sugar},${doc.protein},${doc.fiber},${doc.fat},${doc.sodium},${formatDeficit(deficit)}\n`;
+    const drinks = doc.drinks !== undefined ? doc.drinks : '';
+    csv += `${doc.date},${doc.calories},${doc.caloriesBurned},${doc.carbs},${doc.sugar},${doc.protein},${doc.fiber},${doc.fat},${doc.sodium},${formatDeficit(deficit)},${drinks}\n`;
   });
   
   return csv;

@@ -106,6 +106,9 @@ export function EntriesTable({ entries, defaultCalories, onEdit, onDelete }: Ent
               <TableHead className="cursor-pointer text-right" onClick={() => handleColumnClick('sodium')}>
                 <div className="flex items-center justify-end gap-1">Sodium <SortIcon column="sodium" /></div>
               </TableHead>
+              <TableHead className="cursor-pointer text-right" onClick={() => handleColumnClick('drinks')}>
+                <div className="flex items-center justify-end gap-1">Drinks <SortIcon column="drinks" /></div>
+              </TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -123,6 +126,7 @@ export function EntriesTable({ entries, defaultCalories, onEdit, onDelete }: Ent
                 <TableCell className="text-right">{entry.fiber}g</TableCell>
                 <TableCell className="text-right">{entry.fat}g</TableCell>
                 <TableCell className="text-right">{entry.sodium}mg</TableCell>
+                <TableCell className="text-right">{entry.drinks !== undefined ? entry.drinks : '—'}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button variant="ghost" size="icon" onClick={() => onEdit(entry)}>
