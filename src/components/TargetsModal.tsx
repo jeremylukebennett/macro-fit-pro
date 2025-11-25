@@ -105,6 +105,17 @@ export function TargetsModal({ isOpen, onClose, onSave, initialTargets }: Target
                 onChange={(e) => setTargets({ ...targets, sodium: parseInt(e.target.value) || 0 })}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="target-drinks">Max Daily Drinks</Label>
+              <Input
+                id="target-drinks"
+                type="number"
+                step="0.5"
+                min="0"
+                value={targets.drinks}
+                onChange={(e) => setTargets({ ...targets, drinks: parseFloat(e.target.value) || 0 })}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>

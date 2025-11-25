@@ -26,6 +26,7 @@ const defaultTargets = {
   fat: 65,
   sodium: 2300,
   deficit: 500,
+  drinks: 0,
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {

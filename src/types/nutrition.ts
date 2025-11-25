@@ -10,6 +10,7 @@ export interface DailyNutrient {
   fiber: number;
   fat: number;
   sodium: number;
+  drinks?: number; // Optional to distinguish old entries without drinks tracking
 }
 
 export interface NutrientTargets {
@@ -21,6 +22,7 @@ export interface NutrientTargets {
   fat: number;
   sodium: number;
   deficit: number;
+  drinks: number;
 }
 
 export interface UserSettings {

@@ -23,6 +23,7 @@ export function DayModal({ isOpen, onClose, onSave, initialData }: DayModalProps
     fiber: '',
     fat: '',
     sodium: '',
+    drinks: '',
   });
 
   useEffect(() => {
@@ -37,6 +38,7 @@ export function DayModal({ isOpen, onClose, onSave, initialData }: DayModalProps
         fiber: initialData.fiber.toString(),
         fat: initialData.fat.toString(),
         sodium: initialData.sodium.toString(),
+        drinks: initialData.drinks !== undefined ? initialData.drinks.toString() : '0',
       });
     } else {
       setFormData({
@@ -49,6 +51,7 @@ export function DayModal({ isOpen, onClose, onSave, initialData }: DayModalProps
         fiber: '',
         fat: '',
         sodium: '',
+        drinks: '0',
       });
     }
   }, [initialData, isOpen]);
@@ -65,6 +68,7 @@ export function DayModal({ isOpen, onClose, onSave, initialData }: DayModalProps
       fiber: parseFloat(formData.fiber) || 0,
       fat: parseFloat(formData.fat) || 0,
       sodium: parseFloat(formData.sodium) || 0,
+      drinks: parseFloat(formData.drinks) || 0,
     });
     onClose();
   };
@@ -169,6 +173,17 @@ export function DayModal({ isOpen, onClose, onSave, initialData }: DayModalProps
                 step="0.1"
                 value={formData.sodium}
                 onChange={(e) => setFormData({ ...formData, sodium: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="drinks">Standard Drinks</Label>
+              <Input
+                id="drinks"
+                type="number"
+                step="0.5"
+                min="0"
+                value={formData.drinks}
+                onChange={(e) => setFormData({ ...formData, drinks: e.target.value })}
               />
             </div>
           </div>
