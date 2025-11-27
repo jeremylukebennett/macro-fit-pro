@@ -160,7 +160,10 @@ export function computeAllDrinkStats(docs: DailyNutrient[]): DrinkStats {
     const week = getISOWeek(new Date(entry.date));
     const currentTotal = weeklyTotals.get(week) || 0;
     weeklyTotals.set(week, currentTotal + (entry.drinks ?? 0));
+    console.log(`Date: ${entry.date}, Week: ${week}, Drinks: ${entry.drinks}, Week Total: ${currentTotal + (entry.drinks ?? 0)}`);
   });
+  
+  console.log('Weekly Totals Map:', Array.from(weeklyTotals.entries()));
 
   const weeklyTotalsArray = Array.from(weeklyTotals.values());
   const weeklyAvgTotal = weeklyTotalsArray.length > 0
