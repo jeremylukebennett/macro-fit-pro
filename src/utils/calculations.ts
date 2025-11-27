@@ -113,6 +113,77 @@ export function filterEntriesWithDrinks(docs: DailyNutrient[]): DailyNutrient[] 
   return docs.filter(d => d.drinks !== undefined);
 }
 
+// Drink tracking constants
+export const DAILY_DRINK_TARGET = 4;
+export const WEEKLY_DRINK_TARGET = 14;
+
+// Get ISO week number for a date
+function getISOWeek(date: Date): string {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+  const yearStart = new Date(d.getFullYear(), 0, 1);
+  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `${d.getFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+}
+
+export interface DrinkStats {
+  dailyAvg: number;
+  dailyMedian: number;
+  weeklyAvgTotal: number;
+  weeklyMedianTotal: number;
+  dailyExceedsTarget: boolean;
+  weeklyExceedsTarget: boolean;
+}
+
+export function computeAllDrinkStats(docs: DailyNutrient[]): DrinkStats {
+  const drinksEntries = filterEntriesWithDrinks(docs);
+  
+  if (drinksEntries.length === 0) {
+    return {
+      dailyAvg: 0,
+      dailyMedian: 0,
+      weeklyAvgTotal: 0,
+      weeklyMedianTotal: 0,
+      dailyExceedsTarget: false,
+      weeklyExceedsTarget: false,
+    };
+  }
+
+  // Daily stats
+  const dailyAvg = computeAverage(drinksEntries, d => d.drinks ?? 0);
+  const dailyMedian = computeMedian(drinksEntries, d => d.drinks ?? 0);
+
+  // Weekly stats - group by ISO week
+  const weeklyTotals = new Map<string, number>();
+  drinksEntries.forEach(entry => {
+    const week = getISOWeek(new Date(entry.date));
+    const currentTotal = weeklyTotals.get(week) || 0;
+    weeklyTotals.set(week, currentTotal + (entry.drinks ?? 0));
+  });
+
+  const weeklyTotalsArray = Array.from(weeklyTotals.values());
+  const weeklyAvgTotal = weeklyTotalsArray.length > 0
+    ? weeklyTotalsArray.reduce((sum, val) => sum + val, 0) / weeklyTotalsArray.length
+    : 0;
+  
+  const sortedWeeklyTotals = weeklyTotalsArray.sort((a, b) => a - b);
+  const weeklyMedianTotal = weeklyTotalsArray.length > 0
+    ? (weeklyTotalsArray.length % 2
+      ? sortedWeeklyTotals[Math.floor(weeklyTotalsArray.length / 2)]
+      : (sortedWeeklyTotals[weeklyTotalsArray.length / 2 - 1] + sortedWeeklyTotals[weeklyTotalsArray.length / 2]) / 2)
+    : 0;
+
+  return {
+    dailyAvg,
+    dailyMedian,
+    weeklyAvgTotal,
+    weeklyMedianTotal,
+    dailyExceedsTarget: dailyAvg > DAILY_DRINK_TARGET || dailyMedian > DAILY_DRINK_TARGET,
+    weeklyExceedsTarget: weeklyAvgTotal > WEEKLY_DRINK_TARGET || weeklyMedianTotal > WEEKLY_DRINK_TARGET,
+  };
+}
+
 export function exportToCSV(docs: DailyNutrient[], targets: NutrientTargets): string {
   const nutrients = ['calories', 'caloriesBurned', 'carbs', 'sugar', 'protein', 'fiber', 'fat', 'sodium', 'deficit', 'drinks'] as const;
   
