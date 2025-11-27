@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DailyNutrient } from '@/types/nutrition';
-import { computeDailyDeficit } from '@/utils/calculations';
+import { computeDailyDeficit, computeAllDrinkStats } from '@/utils/calculations';
 import { formatDisplayDate } from '@/utils/dateFormat';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -73,6 +73,8 @@ export function EntriesTable({ entries, defaultCalories, onEdit, onDelete }: Ent
     return sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />;
   };
 
+  const drinkStats = computeAllDrinkStats(entries);
+
   return (
     <div className="rounded-lg border bg-card overflow-hidden">
       <div className="overflow-x-auto">
@@ -139,6 +141,22 @@ export function EntriesTable({ entries, defaultCalories, onEdit, onDelete }: Ent
                 </TableCell>
               </TableRow>
             ))}
+            
+            {/* Drinks Summary Row */}
+            {entries.some(e => e.drinks !== undefined) && (
+              <TableRow className="bg-muted/50 font-medium">
+                <TableCell colSpan={9} className="text-right text-sm text-muted-foreground">
+                  Drinks Summary:
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="space-y-1 text-xs">
+                    <div>Daily: {drinkStats.dailyAvg.toFixed(1)} avg / {drinkStats.dailyMedian.toFixed(1)} med</div>
+                    <div>Weekly: {drinkStats.weeklyAvgTotal.toFixed(1)} avg / {drinkStats.weeklyMedianTotal.toFixed(1)} med</div>
+                  </div>
+                </TableCell>
+                <TableCell></TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
