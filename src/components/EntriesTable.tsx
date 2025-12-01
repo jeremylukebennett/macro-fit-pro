@@ -151,7 +151,10 @@ export function EntriesTable({ entries, defaultCalories, onEdit, onDelete }: Ent
                 <TableCell className="text-right">
                   <div className="space-y-1 text-xs">
                     <div>Daily: {drinkStats.dailyAvg.toFixed(1)} avg / {drinkStats.dailyMedian.toFixed(1)} med</div>
-                    <div>Weekly: {drinkStats.weeklyAvgTotal.toFixed(1)} avg / {drinkStats.weeklyMedianTotal.toFixed(1)} med</div>
+                    <div>Last 7 days: {drinkStats.currentWeekTotal}</div>
+                    {drinkStats.hasCompleteWeeks && (
+                      <div>Historical: {drinkStats.weeklyAvgTotal.toFixed(1)} avg / {drinkStats.weeklyMedianTotal.toFixed(1)} med</div>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell></TableCell>

@@ -110,20 +110,34 @@ export function TrendsCards({ entries, targets }: TrendsCardsProps) {
               </div>
               
               <div className="border-t pt-3">
-                <div className="text-xs font-medium text-muted-foreground mb-2">Per Week</div>
+                <div className="text-xs font-medium text-muted-foreground mb-2">Per Week (rolling 7 days)</div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Avg:</span>
-                    <span className={`font-semibold ${drinkStats.weeklyAvgTotal > WEEKLY_DRINK_TARGET ? 'text-destructive' : ''}`}>
-                      {drinkStats.weeklyAvgTotal.toFixed(1)}
+                    <span className="text-xs text-muted-foreground">Last 7 days:</span>
+                    <span className={`font-semibold ${drinkStats.currentWeekTotal > WEEKLY_DRINK_TARGET ? 'text-destructive' : ''}`}>
+                      {drinkStats.currentWeekTotal}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Median:</span>
-                    <span className={`font-semibold ${drinkStats.weeklyMedianTotal > WEEKLY_DRINK_TARGET ? 'text-destructive' : ''}`}>
-                      {drinkStats.weeklyMedianTotal.toFixed(1)}
-                    </span>
-                  </div>
+                  {drinkStats.hasCompleteWeeks ? (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Historical avg:</span>
+                        <span className="font-semibold">
+                          {drinkStats.weeklyAvgTotal.toFixed(1)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Historical median:</span>
+                        <span className="font-semibold">
+                          {drinkStats.weeklyMedianTotal.toFixed(1)}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-xs text-muted-foreground text-center py-1">
+                      Need 14+ days for historical data
+                    </div>
+                  )}
                   <div className="flex items-center justify-between pt-1 border-t border-border/50">
                     <span className="text-xs text-muted-foreground">Target:</span>
                     <span className="text-sm font-medium text-primary">≤ {WEEKLY_DRINK_TARGET} / week</span>

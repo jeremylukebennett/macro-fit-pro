@@ -117,23 +117,16 @@ export function filterEntriesWithDrinks(docs: DailyNutrient[]): DailyNutrient[] 
 export const DAILY_DRINK_TARGET = 4;
 export const WEEKLY_DRINK_TARGET = 14;
 
-// Get ISO week number for a date
-function getISOWeek(date: Date): string {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-  const yearStart = new Date(d.getFullYear(), 0, 1);
-  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-  return `${d.getFullYear()}-W${String(weekNo).padStart(2, '0')}`;
-}
-
 export interface DrinkStats {
   dailyAvg: number;
   dailyMedian: number;
+  currentWeekTotal: number;
+  currentWeekDays: number;
   weeklyAvgTotal: number;
   weeklyMedianTotal: number;
   dailyExceedsTarget: boolean;
   weeklyExceedsTarget: boolean;
+  hasCompleteWeeks: boolean;
 }
 
 export function computeAllDrinkStats(docs: DailyNutrient[]): DrinkStats {
@@ -143,10 +136,13 @@ export function computeAllDrinkStats(docs: DailyNutrient[]): DrinkStats {
     return {
       dailyAvg: 0,
       dailyMedian: 0,
+      currentWeekTotal: 0,
+      currentWeekDays: 0,
       weeklyAvgTotal: 0,
       weeklyMedianTotal: 0,
       dailyExceedsTarget: false,
       weeklyExceedsTarget: false,
+      hasCompleteWeeks: false,
     };
   }
 
@@ -154,36 +150,68 @@ export function computeAllDrinkStats(docs: DailyNutrient[]): DrinkStats {
   const dailyAvg = computeAverage(drinksEntries, d => d.drinks ?? 0);
   const dailyMedian = computeMedian(drinksEntries, d => d.drinks ?? 0);
 
-  // Weekly stats - group by ISO week
-  const weeklyTotals = new Map<string, number>();
-  drinksEntries.forEach(entry => {
-    const week = getISOWeek(new Date(entry.date));
-    const currentTotal = weeklyTotals.get(week) || 0;
-    weeklyTotals.set(week, currentTotal + (entry.drinks ?? 0));
-    console.log(`Date: ${entry.date}, Week: ${week}, Drinks: ${entry.drinks}, Week Total: ${currentTotal + (entry.drinks ?? 0)}`);
-  });
-  
-  console.log('Weekly Totals Map:', Array.from(weeklyTotals.entries()));
+  // Rolling 7-day window stats
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  const weeklyTotalsArray = Array.from(weeklyTotals.values());
-  const weeklyAvgTotal = weeklyTotalsArray.length > 0
-    ? weeklyTotalsArray.reduce((sum, val) => sum + val, 0) / weeklyTotalsArray.length
+  // Calculate which 7-day window each entry belongs to
+  // Window 0 = last 7 days (0-6 days ago)
+  // Window 1 = 7-13 days ago
+  // Window 2 = 14-20 days ago, etc.
+  const getWindowIndex = (dateStr: string): number => {
+    const entryDate = new Date(dateStr);
+    entryDate.setHours(0, 0, 0, 0);
+    const daysDiff = Math.floor((today.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.floor(daysDiff / 7);
+  };
+
+  // Group entries into rolling 7-day windows
+  const windowTotals = new Map<number, number>();
+  const windowDays = new Map<number, Set<string>>();
+  
+  drinksEntries.forEach(entry => {
+    const windowIndex = getWindowIndex(entry.date);
+    const currentTotal = windowTotals.get(windowIndex) || 0;
+    windowTotals.set(windowIndex, currentTotal + (entry.drinks ?? 0));
+    
+    if (!windowDays.has(windowIndex)) {
+      windowDays.set(windowIndex, new Set());
+    }
+    windowDays.get(windowIndex)!.add(entry.date);
+  });
+
+  // Window 0 = Current week (last 7 days, potentially incomplete)
+  const currentWeekTotal = windowTotals.get(0) || 0;
+  const currentWeekDays = windowDays.get(0)?.size || 0;
+
+  // Windows 1+ = Complete historical weeks (for avg/median)
+  const historicalWeekTotals = Array.from(windowTotals.entries())
+    .filter(([index]) => index > 0)
+    .map(([, total]) => total);
+
+  const hasCompleteWeeks = historicalWeekTotals.length > 0;
+  
+  const weeklyAvgTotal = hasCompleteWeeks
+    ? historicalWeekTotals.reduce((sum, val) => sum + val, 0) / historicalWeekTotals.length
     : 0;
   
-  const sortedWeeklyTotals = weeklyTotalsArray.sort((a, b) => a - b);
-  const weeklyMedianTotal = weeklyTotalsArray.length > 0
-    ? (weeklyTotalsArray.length % 2
-      ? sortedWeeklyTotals[Math.floor(weeklyTotalsArray.length / 2)]
-      : (sortedWeeklyTotals[weeklyTotalsArray.length / 2 - 1] + sortedWeeklyTotals[weeklyTotalsArray.length / 2]) / 2)
+  const sortedWeeklyTotals = [...historicalWeekTotals].sort((a, b) => a - b);
+  const weeklyMedianTotal = hasCompleteWeeks
+    ? (sortedWeeklyTotals.length % 2
+      ? sortedWeeklyTotals[Math.floor(sortedWeeklyTotals.length / 2)]
+      : (sortedWeeklyTotals[sortedWeeklyTotals.length / 2 - 1] + sortedWeeklyTotals[sortedWeeklyTotals.length / 2]) / 2)
     : 0;
 
   return {
     dailyAvg,
     dailyMedian,
+    currentWeekTotal,
+    currentWeekDays,
     weeklyAvgTotal,
     weeklyMedianTotal,
     dailyExceedsTarget: dailyAvg > DAILY_DRINK_TARGET || dailyMedian > DAILY_DRINK_TARGET,
-    weeklyExceedsTarget: weeklyAvgTotal > WEEKLY_DRINK_TARGET || weeklyMedianTotal > WEEKLY_DRINK_TARGET,
+    weeklyExceedsTarget: currentWeekTotal > WEEKLY_DRINK_TARGET,
+    hasCompleteWeeks,
   };
 }
 
