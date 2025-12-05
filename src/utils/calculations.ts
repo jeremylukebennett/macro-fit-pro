@@ -129,7 +129,7 @@ export interface DrinkStats {
   hasCompleteWeeks: boolean;
 }
 
-export function computeAllDrinkStats(docs: DailyNutrient[]): DrinkStats {
+export function computeAllDrinkStats(docs: DailyNutrient[], referenceDate?: Date): DrinkStats {
   const drinksEntries = filterEntriesWithDrinks(docs);
   
   if (drinksEntries.length === 0) {
@@ -151,7 +151,7 @@ export function computeAllDrinkStats(docs: DailyNutrient[]): DrinkStats {
   const dailyMedian = computeMedian(drinksEntries, d => d.drinks ?? 0);
 
   // Rolling 7-day window stats
-  const today = new Date();
+  const today = referenceDate ? new Date(referenceDate) : new Date();
   today.setHours(0, 0, 0, 0);
 
   // Calculate which 7-day window each entry belongs to

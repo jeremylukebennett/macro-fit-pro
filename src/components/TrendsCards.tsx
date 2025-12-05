@@ -6,9 +6,10 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 interface TrendsCardsProps {
   entries: DailyNutrient[];
   targets: NutrientTargets;
+  referenceDate?: Date;
 }
 
-export function TrendsCards({ entries, targets }: TrendsCardsProps) {
+export function TrendsCards({ entries, targets, referenceDate }: TrendsCardsProps) {
   if (entries.length === 0) {
     return <div className="text-center text-muted-foreground py-8">No data available</div>;
   }
@@ -25,7 +26,7 @@ export function TrendsCards({ entries, targets }: TrendsCardsProps) {
   ];
 
   const drinksEntries = filterEntriesWithDrinks(entries);
-  const drinkStats = computeAllDrinkStats(entries);
+  const drinkStats = computeAllDrinkStats(entries, referenceDate);
 
   const TrendIcon = ({ trend }: { trend: 'up' | 'down' | 'stable' }) => {
     if (trend === 'up') return <TrendingUp className="w-4 h-4 text-success" />;
