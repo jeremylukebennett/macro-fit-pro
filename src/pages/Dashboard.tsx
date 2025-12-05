@@ -29,6 +29,11 @@ export default function Dashboard() {
     return yesterday;
   })() : undefined;
 
+  // Debug logging
+  const today = new Date().toISOString().split('T')[0];
+  const hasTodayData = dailyNutrients.some(d => d.date === today);
+  console.log('Range filter:', rangeFilter, '| Total entries:', dailyNutrients.length, '| Filtered:', filteredEntries.length, '| Has today data:', hasTodayData);
+
   const handleAddDay = () => {
     setEditingEntry(null);
     setIsDayModalOpen(true);
@@ -127,7 +132,7 @@ export default function Dashboard() {
 
       <main className="container mx-auto px-6 py-12 space-y-12">
         <div className="flex flex-wrap items-center justify-between gap-6 pb-8 border-b-2 border-foreground/10">
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {(['prev', 'all', '3', '7', '30'] as RangeFilter[]).map((range) => (
               <Button
                 key={range}
@@ -138,6 +143,10 @@ export default function Dashboard() {
                 {range === 'prev' ? 'PREV' : range === 'all' ? 'ALL' : `${range}D`}
               </Button>
             ))}
+            <span className="text-xs text-muted-foreground ml-2">
+              {filteredEntries.length} entries
+              {rangeFilter === 'prev' && ' (excluding today)'}
+            </span>
           </div>
           <div className="flex gap-3">
             <Button onClick={() => setIsTargetsModalOpen(true)} variant="outline" size="sm">
