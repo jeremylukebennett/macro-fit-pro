@@ -22,17 +22,14 @@ export default function Dashboard() {
 
   const filteredEntries = filterDocsByRange(dailyNutrients, rangeFilter);
   
-  // For 'prev' filter, shift reference date to yesterday for rolling calculations
-  const referenceDate = rangeFilter === 'prev' ? (() => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    return yesterday;
+  // For 'prev' filter, use the most recent remaining entry's date as reference for rolling calculations
+  const referenceDate = rangeFilter === 'prev' && filteredEntries.length > 0 ? (() => {
+    const sorted = [...filteredEntries].sort((a, b) => b.date.localeCompare(a.date));
+    return new Date(sorted[0].date);
   })() : undefined;
 
   // Debug logging
-  const today = new Date().toISOString().split('T')[0];
-  const hasTodayData = dailyNutrients.some(d => d.date === today);
-  console.log('Range filter:', rangeFilter, '| Total entries:', dailyNutrients.length, '| Filtered:', filteredEntries.length, '| Has today data:', hasTodayData);
+  console.log('Range filter:', rangeFilter, '| Total entries:', dailyNutrients.length, '| Filtered:', filteredEntries.length);
 
   const handleAddDay = () => {
     setEditingEntry(null);
@@ -145,7 +142,7 @@ export default function Dashboard() {
             ))}
             <span className="text-xs text-muted-foreground ml-2">
               {filteredEntries.length} entries
-              {rangeFilter === 'prev' && ' (excluding today)'}
+              {rangeFilter === 'prev' && ' (excluding latest)'}
             </span>
           </div>
           <div className="flex gap-3">

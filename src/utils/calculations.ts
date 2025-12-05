@@ -9,8 +9,11 @@ export function computeDailyDeficit(doc: DailyNutrient, defaultCalories: number 
 export function filterDocsByRange(docs: DailyNutrient[], range: RangeFilter): DailyNutrient[] {
   if (range === 'all') return docs;
   if (range === 'prev') {
-    const today = new Date().toISOString().split('T')[0];
-    return docs.filter(d => d.date < today);
+    // Exclude the most recent entry (by date)
+    if (docs.length <= 1) return [];
+    const sorted = [...docs].sort((a, b) => b.date.localeCompare(a.date));
+    const mostRecentDate = sorted[0].date;
+    return docs.filter(d => d.date !== mostRecentDate);
   }
   
   const days = parseInt(range);
