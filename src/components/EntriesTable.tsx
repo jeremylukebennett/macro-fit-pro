@@ -11,12 +11,13 @@ interface EntriesTableProps {
   defaultCalories: number;
   onEdit: (entry: DailyNutrient) => void;
   onDelete: (id: string) => void;
+  referenceDate?: Date;
 }
 
 type SortColumn = keyof DailyNutrient | 'deficit' | null;
 type SortDirection = 'asc' | 'desc';
 
-export function EntriesTable({ entries, defaultCalories, onEdit, onDelete }: EntriesTableProps) {
+export function EntriesTable({ entries, defaultCalories, onEdit, onDelete, referenceDate }: EntriesTableProps) {
   const [sortColumn, setSortColumn] = useState<SortColumn>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [clickCount, setClickCount] = useState<Record<string, number>>({});
@@ -73,7 +74,7 @@ export function EntriesTable({ entries, defaultCalories, onEdit, onDelete }: Ent
     return sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />;
   };
 
-  const drinkStats = computeAllDrinkStats(entries);
+  const drinkStats = computeAllDrinkStats(entries, referenceDate);
 
   return (
     <div className="rounded-lg border bg-card overflow-hidden">

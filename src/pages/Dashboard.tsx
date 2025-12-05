@@ -21,6 +21,13 @@ export default function Dashboard() {
   const [rangeFilter, setRangeFilter] = useState<RangeFilter>('all');
 
   const filteredEntries = filterDocsByRange(dailyNutrients, rangeFilter);
+  
+  // For 'prev' filter, shift reference date to yesterday for rolling calculations
+  const referenceDate = rangeFilter === 'prev' ? (() => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return yesterday;
+  })() : undefined;
 
   const handleAddDay = () => {
     setEditingEntry(null);
@@ -148,13 +155,14 @@ export default function Dashboard() {
 
         {userSettings && (
           <>
-            <TrendsCards entries={filteredEntries} targets={userSettings.targets} />
+            <TrendsCards entries={filteredEntries} targets={userSettings.targets} referenceDate={referenceDate} />
             <NutritionCharts entries={filteredEntries} />
             <EntriesTable
               entries={filteredEntries}
               defaultCalories={userSettings.targets.calories}
               onEdit={handleEditDay}
               onDelete={handleDeleteDay}
+              referenceDate={referenceDate}
             />
           </>
         )}
