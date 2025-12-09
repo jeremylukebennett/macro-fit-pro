@@ -1,9 +1,11 @@
-import { useEffect, useRef } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Pie } from 'react-chartjs-2';
 import { DailyNutrient } from '@/types/nutrition';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
@@ -12,6 +14,8 @@ interface NutritionChartsProps {
 }
 
 export function NutritionCharts({ entries }: NutritionChartsProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
   if (entries.length === 0) {
     return <div className="text-center text-muted-foreground py-8">No data available</div>;
   }
@@ -95,18 +99,26 @@ export function NutritionCharts({ entries }: NutritionChartsProps) {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {entries.map((entry) => (
-          <Card key={entry.id}>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">{entry.date}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Pie data={getDailyData(entry)} options={chartOptions} />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full justify-center py-2">
+          <span>Daily Charts ({entries.length})</span>
+          <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+            {entries.map((entry) => (
+              <Card key={entry.id}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">{entry.date}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Pie data={getDailyData(entry)} options={chartOptions} />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 }

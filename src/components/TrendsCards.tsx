@@ -34,6 +34,14 @@ export function TrendsCards({ entries, targets, referenceDate }: TrendsCardsProp
     return <Minus className="w-4 h-4 text-muted-foreground" />;
   };
 
+  // Format deficit: negative deficit (surplus) shows as positive with +
+  const formatDeficitValue = (value: number): string => {
+    if (value < 0) {
+      return `+${Math.abs(value).toFixed(1)}`;
+    }
+    return value.toFixed(1);
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {nutrients.map(({ key, label, unit, target }) => {
@@ -58,14 +66,18 @@ export function TrendsCards({ entries, targets, referenceDate }: TrendsCardsProp
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Avg:</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold">{avg.toFixed(1)}{unit}</span>
+                  <span className="font-semibold">
+                    {key === 'deficit' ? formatDeficitValue(avg) : `${avg.toFixed(1)}${unit}`}
+                  </span>
                   <TrendIcon trend={trend.avgTrend} />
                 </div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Median:</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold">{median.toFixed(1)}{unit}</span>
+                  <span className="font-semibold">
+                    {key === 'deficit' ? formatDeficitValue(median) : `${median.toFixed(1)}${unit}`}
+                  </span>
                   <TrendIcon trend={trend.medTrend} />
                 </div>
               </div>
