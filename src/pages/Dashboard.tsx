@@ -128,34 +128,36 @@ export default function Dashboard() {
       </header>
 
       <main className="container mx-auto px-6 py-12 space-y-12">
-        <div className="flex flex-wrap items-center justify-between gap-6 pb-8 border-b-2 border-foreground/10">
-          <div className="flex flex-wrap items-center gap-3">
-            {(['prev', 'all', '3', '7', '30'] as RangeFilter[]).map((range) => (
-              <Button
-                key={range}
-                variant={rangeFilter === range ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setRangeFilter(range)}
-              >
-                {range === 'prev' ? 'PREV' : range === 'all' ? 'ALL' : `${range}D`}
+        <div className="sticky top-0 z-50 bg-background py-4 -mx-6 px-6 border-b-2 border-foreground/10">
+          <div className="flex flex-wrap items-center justify-between gap-6">
+            <div className="flex flex-wrap items-center gap-3">
+              {(['prev', 'all', '3', '7', '30'] as RangeFilter[]).map((range) => (
+                <Button
+                  key={range}
+                  variant={rangeFilter === range ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setRangeFilter(range)}
+                >
+                  {range === 'prev' ? 'PREV' : range === 'all' ? 'ALL' : `${range}D`}
+                </Button>
+              ))}
+              <span className="text-xs text-muted-foreground ml-2">
+                {filteredEntries.length} entries
+                {rangeFilter === 'prev' && ' (excluding latest)'}
+              </span>
+            </div>
+            <div className="flex gap-3">
+              <Button onClick={() => setIsTargetsModalOpen(true)} variant="outline" size="sm">
+                <Target className="w-4 h-4" />
               </Button>
-            ))}
-            <span className="text-xs text-muted-foreground ml-2">
-              {filteredEntries.length} entries
-              {rangeFilter === 'prev' && ' (excluding latest)'}
-            </span>
-          </div>
-          <div className="flex gap-3">
-            <Button onClick={() => setIsTargetsModalOpen(true)} variant="outline" size="sm">
-              <Target className="w-4 h-4" />
-            </Button>
-            <Button onClick={handleExportCSV} variant="outline" size="sm">
-              <Download className="w-4 h-4" />
-            </Button>
-            <Button onClick={handleAddDay} size="sm">
-              <Plus className="w-4 h-4 mr-2" />
-              ADD DAY
-            </Button>
+              <Button onClick={handleExportCSV} variant="outline" size="sm">
+                <Download className="w-4 h-4" />
+              </Button>
+              <Button onClick={handleAddDay} size="sm">
+                <Plus className="w-4 h-4 mr-2" />
+                ADD DAY
+              </Button>
+            </div>
           </div>
         </div>
 
