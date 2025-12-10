@@ -34,12 +34,15 @@ export function TrendsCards({ entries, targets, referenceDate }: TrendsCardsProp
     return <Minus className="w-4 h-4 text-muted-foreground" />;
   };
 
-  // Format deficit: negative deficit (surplus) shows as positive with +
+  // Format deficit: positive deficit means burned > consumed (show as deficit)
+  // Negative deficit means consumed > burned (surplus - show as positive with +)
+  // We invert the sign: surplus should display as positive
   const formatDeficitValue = (value: number): string => {
-    if (value < 0) {
-      return `+${Math.abs(value).toFixed(1)}`;
+    const surplus = -value; // Invert: deficit becomes negative, surplus becomes positive
+    if (surplus > 0) {
+      return `+${surplus.toFixed(0)}`;
     }
-    return value.toFixed(1);
+    return surplus.toFixed(0);
   };
 
   return (
