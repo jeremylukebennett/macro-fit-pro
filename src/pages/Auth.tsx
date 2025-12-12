@@ -29,8 +29,9 @@ export default function Auth() {
         toast.success('Signed in successfully!');
       }
       navigate('/');
-    } catch (error: any) {
-      toast.error(error.message || 'Authentication failed');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Authentication failed';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -42,8 +43,9 @@ export default function Auth() {
       await signInWithGoogle();
       toast.success('Signed in with Google!');
       navigate('/');
-    } catch (error: any) {
-      toast.error(error.message || 'Google sign-in failed');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Google sign-in failed';
+      toast.error(message);
     } finally {
       setLoading(false);
     }

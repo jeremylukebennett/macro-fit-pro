@@ -43,7 +43,8 @@ export function EntriesTable({ entries, defaultCalories, onEdit, onDelete, refer
   };
 
   const sortedEntries = [...entries].sort((a, b) => {
-    let aVal: any, bVal: any;
+    let aVal: number | string | undefined;
+    let bVal: number | string | undefined;
     
     if (sortColumn === 'deficit') {
       aVal = computeDailyDeficit(a, defaultCalories);
@@ -55,13 +56,17 @@ export function EntriesTable({ entries, defaultCalories, onEdit, onDelete, refer
       return 0;
     }
     
-    if (typeof aVal === 'string') {
+    if (typeof aVal === 'string' && typeof bVal === 'string') {
       return sortDirection === 'asc' 
         ? aVal.localeCompare(bVal) 
         : bVal.localeCompare(aVal);
     }
-    
-    return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+
+    if (typeof aVal === 'number' && typeof bVal === 'number') {
+      return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+    }
+
+    return 0;
   });
 
   const formatDeficit = (value: number) => {
