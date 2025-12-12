@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         display: ['Rajdhani', 'sans-serif'],
         body: ['Barlow Condensed', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
