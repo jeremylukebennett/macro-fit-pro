@@ -1,0 +1,25 @@
+{
+  "name": "Macro Fit Pro",
+  "short_name": "Macro Fit",
+  "description": "Track your nutrition and fitness goals",
+  "start_url": "/macro-fit-pro/",
+  "display": "standalone",
+  "background_color": "#0F1117",
+  "theme_color": "#F97316",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/macro-fit-pro/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/macro-fit-pro/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["health", "fitness", "lifestyle"],
+  "screenshots": []
+}

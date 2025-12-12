@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="appleGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:hsl(12, 100%, 60%);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:hsl(12, 100%, 50%);stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Apple body -->
+  <path d="M 256 96
+         C 256 96 200 96 160 140
+         C 120 184 100 240 100 300
+         C 100 380 140 460 220 480
+         C 240 485 256 485 256 485
+         C 256 485 272 485 292 480
+         C 372 460 412 380 412 300
+         C 412 240 392 184 352 140
+         C 312 96 256 96 256 96 Z"
+         fill="url(#appleGradient)"
+         stroke="hsl(12, 100%, 45%)"
+         stroke-width="4"/>
+
+  <!-- Leaf -->
+  <path d="M 256 96
+         C 256 96 280 60 300 50
+         C 320 40 340 45 345 60
+         C 350 75 340 90 320 100
+         C 300 110 280 105 256 96 Z"
+         fill="hsl(120, 60%, 45%)"
+         stroke="hsl(120, 60%, 35%)"
+         stroke-width="2"/>
+
+  <!-- Highlight -->
+  <ellipse cx="200" cy="200" rx="40" ry="60"
+         fill="hsl(12, 100%, 70%)"
+         opacity="0.3"/>
+</svg>
