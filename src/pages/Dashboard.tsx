@@ -7,7 +7,7 @@ import { DayModal } from '@/components/DayModal';
 import { TargetsModal } from '@/components/TargetsModal';
 import { TrendsCards } from '@/components/TrendsCards';
 import { NutritionCharts } from '@/components/NutritionCharts';
-import { DailyNutrient, RangeFilter } from '@/types/nutrition';
+import { DailyNutrient, RangeFilter, NutrientTargets } from '@/types/nutrition';
 import { filterDocsByRange, exportToCSV } from '@/utils/calculations';
 import { toast } from 'sonner';
 import { Plus, Target, Download, LogOut, Moon, Sun, Apple } from 'lucide-react';
@@ -64,7 +64,7 @@ export default function Dashboard() {
     }
   };
 
-  const handleSaveTargets = async (targets: any) => {
+  const handleSaveTargets = async (targets: NutrientTargets) => {
     try {
       await updateUserSettings({ targets });
       toast.success('Targets updated successfully');
