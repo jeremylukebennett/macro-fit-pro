@@ -118,13 +118,14 @@ export function filterEntriesWithDrinks(docs: DailyNutrient[]): DailyNutrient[] 
 
 // Drink tracking constants
 export const DAILY_DRINK_TARGET = 4;
-export const WEEKLY_DRINK_TARGET = 14;
+export const WEEKLY_DRINK_TARGET = 15;
 
 export interface DrinkStats {
   dailyAvg: number;
   dailyMedian: number;
+  daysWithDrinks: number;
+  daysWithDrinksLast7: number;
   currentWeekTotal: number;
-  currentWeekDays: number;
   weeklyAvgTotal: number;
   weeklyMedianTotal: number;
   dailyExceedsTarget: boolean;
@@ -134,13 +135,14 @@ export interface DrinkStats {
 
 export function computeAllDrinkStats(docs: DailyNutrient[], referenceDate?: Date): DrinkStats {
   const drinksEntries = filterEntriesWithDrinks(docs);
-  
+
   if (drinksEntries.length === 0) {
     return {
       dailyAvg: 0,
       dailyMedian: 0,
+      daysWithDrinks: 0,
+      daysWithDrinksLast7: 0,
       currentWeekTotal: 0,
-      currentWeekDays: 0,
       weeklyAvgTotal: 0,
       weeklyMedianTotal: 0,
       dailyExceedsTarget: false,
@@ -149,13 +151,29 @@ export function computeAllDrinkStats(docs: DailyNutrient[], referenceDate?: Date
     };
   }
 
-  // Daily stats
-  const dailyAvg = computeAverage(drinksEntries, d => d.drinks ?? 0);
-  const dailyMedian = computeMedian(drinksEntries, d => d.drinks ?? 0);
+  // Daily stats - ONLY for days where drinks > 0
+  const daysWithActualDrinks = drinksEntries.filter(d => (d.drinks ?? 0) > 0);
+  const daysWithDrinks = daysWithActualDrinks.length;
+
+  const dailyAvg = daysWithDrinks > 0
+    ? computeAverage(daysWithActualDrinks, d => d.drinks ?? 0)
+    : 0;
+  const dailyMedian = daysWithDrinks > 0
+    ? computeMedian(daysWithActualDrinks, d => d.drinks ?? 0)
+    : 0;
 
   // Rolling 7-day window stats
   const today = referenceDate ? new Date(referenceDate) : new Date();
   today.setHours(0, 0, 0, 0);
+
+  // Calculate days with drinks in last 7 days
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const daysWithDrinksLast7 = daysWithActualDrinks.filter(d => {
+    const entryDate = new Date(d.date);
+    entryDate.setHours(0, 0, 0, 0);
+    return entryDate > sevenDaysAgo && entryDate <= today;
+  }).length;
 
   // Calculate which 7-day window each entry belongs to
   // Window 0 = last 7 days (0-6 days ago)
@@ -208,8 +226,9 @@ export function computeAllDrinkStats(docs: DailyNutrient[], referenceDate?: Date
   return {
     dailyAvg,
     dailyMedian,
+    daysWithDrinks,
+    daysWithDrinksLast7,
     currentWeekTotal,
-    currentWeekDays,
     weeklyAvgTotal,
     weeklyMedianTotal,
     dailyExceedsTarget: dailyAvg > DAILY_DRINK_TARGET || dailyMedian > DAILY_DRINK_TARGET,
