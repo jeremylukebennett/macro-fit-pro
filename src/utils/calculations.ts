@@ -182,24 +182,28 @@ export function computeAllDrinkStats(docs: DailyNutrient[], referenceDate?: Date
   const todayStr = formatLocalDate(today);
 
   // Calculate days with drinks in last 7 days using string comparison (timezone-safe)
+  // "Last 7 days" includes today and the 7 days before (8 days total window)
   const sevenDaysAgo = new Date(today);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const sevenDaysAgoStr = formatLocalDate(sevenDaysAgo);
 
   const daysWithDrinksLast7 = daysWithActualDrinks.filter(d => {
     // Use string comparison - YYYY-MM-DD format sorts correctly
-    return d.date > sevenDaysAgoStr && d.date <= todayStr;
+    // Use >= to include the 7th day ago (e.g., if today is Dec 20, include Dec 13)
+    return d.date >= sevenDaysAgoStr && d.date <= todayStr;
   }).length;
 
   // Calculate which 7-day window each entry belongs to
-  // Window 0 = last 7 days (0-6 days ago)
-  // Window 1 = 7-13 days ago
-  // Window 2 = 14-20 days ago, etc.
+  // Window 0 = last 8 days (0-7 days ago, inclusive)
+  // Window 1 = 8-14 days ago
+  // Window 2 = 15-21 days ago, etc.
   const getWindowIndex = (dateStr: string): number => {
     // Parse as local date to avoid timezone issues
     const entryDate = parseLocalDate(dateStr);
     const daysDiff = Math.floor((today.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
-    return Math.floor(daysDiff / 7);
+    // Include the 7th day ago in window 0
+    if (daysDiff <= 7) return 0;
+    return Math.floor((daysDiff - 1) / 7);
   };
 
   // Group entries into rolling 7-day windows
