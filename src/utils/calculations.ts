@@ -133,6 +133,20 @@ export interface DrinkStats {
   hasCompleteWeeks: boolean;
 }
 
+// Helper to format a Date to YYYY-MM-DD in local timezone
+function formatLocalDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Helper to parse a YYYY-MM-DD string as local midnight (avoids timezone issues)
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
 export function computeAllDrinkStats(docs: DailyNutrient[], referenceDate?: Date): DrinkStats {
   const drinksEntries = filterEntriesWithDrinks(docs);
 
@@ -165,14 +179,16 @@ export function computeAllDrinkStats(docs: DailyNutrient[], referenceDate?: Date
   // Rolling 7-day window stats
   const today = referenceDate ? new Date(referenceDate) : new Date();
   today.setHours(0, 0, 0, 0);
+  const todayStr = formatLocalDate(today);
 
-  // Calculate days with drinks in last 7 days
+  // Calculate days with drinks in last 7 days using string comparison (timezone-safe)
   const sevenDaysAgo = new Date(today);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const sevenDaysAgoStr = formatLocalDate(sevenDaysAgo);
+
   const daysWithDrinksLast7 = daysWithActualDrinks.filter(d => {
-    const entryDate = new Date(d.date);
-    entryDate.setHours(0, 0, 0, 0);
-    return entryDate > sevenDaysAgo && entryDate <= today;
+    // Use string comparison - YYYY-MM-DD format sorts correctly
+    return d.date > sevenDaysAgoStr && d.date <= todayStr;
   }).length;
 
   // Calculate which 7-day window each entry belongs to
@@ -180,8 +196,8 @@ export function computeAllDrinkStats(docs: DailyNutrient[], referenceDate?: Date
   // Window 1 = 7-13 days ago
   // Window 2 = 14-20 days ago, etc.
   const getWindowIndex = (dateStr: string): number => {
-    const entryDate = new Date(dateStr);
-    entryDate.setHours(0, 0, 0, 0);
+    // Parse as local date to avoid timezone issues
+    const entryDate = parseLocalDate(dateStr);
     const daysDiff = Math.floor((today.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
     return Math.floor(daysDiff / 7);
   };

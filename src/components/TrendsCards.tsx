@@ -2,6 +2,8 @@ import { DailyNutrient, NutrientTargets } from '@/types/nutrition';
 import { computeAverage, computeMedian, computeTrend, computeTrendForDeficit, computeDailyDeficit, filterEntriesWithDrinks, computeAllDrinkStats, DAILY_DRINK_TARGET, WEEKLY_DRINK_TARGET } from '@/utils/calculations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Minus, Flame, Activity, Wheat, Candy, Beef, Apple, Droplet, Sparkles, Wine } from 'lucide-react';
+import { RollingNumber } from '@/components/RollingNumber';
+import { useSettings } from '@/contexts/SettingsContext';
 
 interface TrendsCardsProps {
   entries: DailyNutrient[];
@@ -10,6 +12,8 @@ interface TrendsCardsProps {
 }
 
 export function TrendsCards({ entries, targets, referenceDate }: TrendsCardsProps) {
+  const { showDrinks } = useSettings();
+
   if (entries.length === 0) {
     return <div className="text-center text-muted-foreground py-8">No data available</div>;
   }
@@ -73,9 +77,11 @@ export function TrendsCards({ entries, targets, referenceDate }: TrendsCardsProp
                 <span className="text-sm metric-text text-muted-foreground">Avg:</span>
                 <div className="flex items-center gap-2">
                   <span className="text-2xl metric-text tabular-nums">
-                    {key === 'deficit' ? formatDeficitValue(avg) : (
+                    {key === 'deficit' ? (
+                      <RollingNumber value={-Math.round(avg)} decimals={0} showSign={true} />
+                    ) : (
                       <>
-                        {Math.round(avg)}
+                        <RollingNumber value={Math.round(avg)} decimals={0} />
                         <span className="text-base font-light">{unit}</span>
                       </>
                     )}
@@ -87,9 +93,11 @@ export function TrendsCards({ entries, targets, referenceDate }: TrendsCardsProp
                 <span className="text-sm metric-text text-muted-foreground">Median:</span>
                 <div className="flex items-center gap-2">
                   <span className="text-2xl metric-text tabular-nums">
-                    {key === 'deficit' ? formatDeficitValue(median) : (
+                    {key === 'deficit' ? (
+                      <RollingNumber value={-Math.round(median)} decimals={0} showSign={true} />
+                    ) : (
                       <>
-                        {Math.round(median)}
+                        <RollingNumber value={Math.round(median)} decimals={0} />
                         <span className="text-base font-light">{unit}</span>
                       </>
                     )}
@@ -108,8 +116,9 @@ export function TrendsCards({ entries, targets, referenceDate }: TrendsCardsProp
           </Card>
         );
       })}
-      
-      {/* Special Drinks Card */}
+
+      {/* Special Drinks Card - Only show if privacy setting allows */}
+      {showDrinks && (
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base metric-text flex items-center gap-2">
@@ -128,19 +137,19 @@ export function TrendsCards({ entries, targets, referenceDate }: TrendsCardsProp
                   <div className="flex items-center justify-between">
                     <span className="text-sm metric-text text-muted-foreground">Avg:</span>
                     <span className={`text-2xl metric-text tabular-nums ${drinkStats.dailyAvg > DAILY_DRINK_TARGET ? 'text-destructive' : ''}`}>
-                      {Math.round(drinkStats.dailyAvg)}
+                      <RollingNumber value={Math.round(drinkStats.dailyAvg)} decimals={0} />
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm metric-text text-muted-foreground">Median:</span>
                     <span className={`text-2xl metric-text tabular-nums ${drinkStats.dailyMedian > DAILY_DRINK_TARGET ? 'text-destructive' : ''}`}>
-                      {Math.round(drinkStats.dailyMedian)}
+                      <RollingNumber value={Math.round(drinkStats.dailyMedian)} decimals={0} />
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm metric-text text-muted-foreground">Days (last 7):</span>
                     <span className="text-2xl metric-text tabular-nums">
-                      {drinkStats.daysWithDrinksLast7}
+                      <RollingNumber value={drinkStats.daysWithDrinksLast7} decimals={0} />
                     </span>
                   </div>
                   <div className="flex items-center justify-between pt-1 border-t border-border/50">
@@ -156,7 +165,7 @@ export function TrendsCards({ entries, targets, referenceDate }: TrendsCardsProp
                   <div className="flex items-center justify-between">
                     <span className="text-sm metric-text text-muted-foreground">Last 7 days:</span>
                     <span className={`text-2xl metric-text tabular-nums ${drinkStats.currentWeekTotal > WEEKLY_DRINK_TARGET ? 'text-destructive' : ''}`}>
-                      {drinkStats.currentWeekTotal}
+                      <RollingNumber value={drinkStats.currentWeekTotal} decimals={0} />
                     </span>
                   </div>
                   {drinkStats.hasCompleteWeeks ? (
@@ -164,13 +173,13 @@ export function TrendsCards({ entries, targets, referenceDate }: TrendsCardsProp
                       <div className="flex items-center justify-between">
                         <span className="text-sm metric-text text-muted-foreground">Avg week:</span>
                         <span className={`text-2xl metric-text tabular-nums ${drinkStats.weeklyAvgTotal > WEEKLY_DRINK_TARGET ? 'text-destructive' : ''}`}>
-                          {Math.round(drinkStats.weeklyAvgTotal)}
+                          <RollingNumber value={Math.round(drinkStats.weeklyAvgTotal)} decimals={0} />
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm metric-text text-muted-foreground">Median week:</span>
                         <span className={`text-2xl metric-text tabular-nums ${drinkStats.weeklyMedianTotal > WEEKLY_DRINK_TARGET ? 'text-destructive' : ''}`}>
-                          {Math.round(drinkStats.weeklyMedianTotal)}
+                          <RollingNumber value={Math.round(drinkStats.weeklyMedianTotal)} decimals={0} />
                         </span>
                       </div>
                     </>
@@ -189,6 +198,7 @@ export function TrendsCards({ entries, targets, referenceDate }: TrendsCardsProp
           )}
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }
