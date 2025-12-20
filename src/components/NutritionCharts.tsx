@@ -38,10 +38,12 @@ export function NutritionCharts({ entries }: NutritionChartsProps) {
         ((avgFatCals / totalCals) * 100).toFixed(1),
       ],
       backgroundColor: [
-        'hsl(174, 62%, 47%)',
-        'hsl(199, 89%, 48%)',
-        'hsl(38, 92%, 50%)',
+        'hsl(120, 70%, 35%)',   // Vibrant green for Protein
+        'hsl(280, 80%, 45%)',   // Vibrant purple/magenta for Carbs
+        'hsl(45, 100%, 45%)',   // Vibrant yellow for Fat (toned down)
       ],
+      borderColor: 'hsl(24.6, 95%, 53.1%)',  // Orange primary color
+      borderWidth: 3,
     }],
   };
 
@@ -53,7 +55,7 @@ export function NutritionCharts({ entries }: NutritionChartsProps) {
         position: 'bottom' as const,
       },
       datalabels: {
-        color: '#fff',
+        color: '#000',
         font: {
           weight: 'bold' as const,
           size: 14,
@@ -78,10 +80,12 @@ export function NutritionCharts({ entries }: NutritionChartsProps) {
           ((fatCals / total) * 100).toFixed(1),
         ],
         backgroundColor: [
-          'hsl(174, 62%, 47%)',
-          'hsl(199, 89%, 48%)',
-          'hsl(38, 92%, 50%)',
+          'hsl(120, 70%, 35%)',   // Vibrant green for Protein
+          'hsl(280, 80%, 45%)',   // Vibrant purple/magenta for Carbs
+          'hsl(45, 100%, 45%)',   // Vibrant yellow for Fat (toned down)
         ],
+        borderColor: 'hsl(24.6, 95%, 53.1%)',  // Orange primary color
+        borderWidth: 3,
       }],
     };
   };

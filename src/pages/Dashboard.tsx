@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNutritionData } from '@/hooks/useNutritionData';
 import { Button } from '@/components/ui/button';
@@ -10,15 +11,16 @@ import { NutritionCharts } from '@/components/NutritionCharts';
 import { DailyNutrient, RangeFilter, NutrientTargets } from '@/types/nutrition';
 import { filterDocsByRange, exportToCSV } from '@/utils/calculations';
 import { toast } from 'sonner';
-import { Plus, Target, Download, LogOut, Moon, Sun, Apple } from 'lucide-react';
+import { Plus, Target, Download, LogOut, Moon, Sun, Apple, Settings } from 'lucide-react';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { user, userSettings, logout, updateUserSettings } = useAuth();
   const { dailyNutrients, loading, addNutrient, updateNutrient, deleteNutrient } = useNutritionData();
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   const [isTargetsModalOpen, setIsTargetsModalOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<DailyNutrient | null>(null);
-  const [rangeFilter, setRangeFilter] = useState<RangeFilter>('all');
+  const [rangeFilter, setRangeFilter] = useState<RangeFilter>('7');
 
   const filteredEntries = filterDocsByRange(dailyNutrients, rangeFilter);
   
@@ -111,11 +113,14 @@ export default function Dashboard() {
                 <Apple className="w-8 h-8 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-3xl font-display leading-none">NUTRITION TRACKER</h1>
-                <p className="text-xs font-body uppercase tracking-wider text-muted-foreground mt-1">{user?.email}</p>
+                <h1 className="text-3xl metric-text leading-none">Nutrition Tracker</h1>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground mt-1">{user?.email}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/settings')}>
+                <Settings className="w-5 h-5" />
+              </Button>
               <Button variant="ghost" size="icon" onClick={toggleTheme}>
                 {userSettings?.theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </Button>

@@ -32,7 +32,7 @@ All colors MUST be HSL.
     --destructive: 0 100% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
+    --border: 12 100% 55%;
     --input: 0 0% 90%;
     --ring: 12 100% 55%;
 
@@ -93,7 +93,7 @@ All colors MUST be HSL.
     --destructive: 0 100% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 20%;
+    --border: 12 100% 55%;
     --input: 0 0% 20%;
     --ring: 12 100% 55%;
 
@@ -147,5 +147,30 @@ All colors MUST be HSL.
     line-height: 1;
     letter-spacing: -0.5px;
     text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.985);
+  }
+
+  /* Rolling number animation - smooth fade effect */
+  .rolling-digit-wrapper {
+    display: inline-block;
+    position: relative;
+    min-width: 0.6em;
+    text-align: center;
+  }
+
+  .rolling-digit-wrapper.decimal-point {
+    min-width: 0.3em;
+  }
+
+  .rolling-digit {
+    display: inline-block;
+    position: relative;
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+  }
+
+  .rolling-digit.flickering {
+    opacity: 0;
+    transform: scale(0.95);
   }
 }
