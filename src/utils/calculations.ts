@@ -17,14 +17,23 @@ export function filterDocsByRange(docs: DailyNutrient[], range: RangeFilter): Da
   }
   
   const days = parseInt(range);
-  const cutoffDate = new Date();
-  // Subtract (days - 1) so that "7 days" includes exactly 7 calendar days (today + 6 previous)
-  cutoffDate.setDate(cutoffDate.getDate() - (days - 1));
-  // Use local date format to match document date format (avoids timezone issues)
-  const year = cutoffDate.getFullYear();
-  const month = String(cutoffDate.getMonth() + 1).padStart(2, '0');
-  const day = String(cutoffDate.getDate()).padStart(2, '0');
-  const cutoff = `${year}-${month}-${day}`;
+
+  // Use the most recent entry's date as reference, not today
+  // This ensures "7 days" shows 7 entries even if you haven't logged today
+  if (docs.length === 0) return [];
+  const sorted = [...docs].sort((a, b) => b.date.localeCompare(a.date));
+  const mostRecentDate = sorted[0].date;
+
+  // Parse the most recent date and subtract (days - 1) to get exactly N days
+  const [year, month, day] = mostRecentDate.split('-').map(Number);
+  const referenceDate = new Date(year, month - 1, day);
+  referenceDate.setDate(referenceDate.getDate() - (days - 1));
+
+  // Format cutoff in local date format to match document dates
+  const cutoffYear = referenceDate.getFullYear();
+  const cutoffMonth = String(referenceDate.getMonth() + 1).padStart(2, '0');
+  const cutoffDay = String(referenceDate.getDate()).padStart(2, '0');
+  const cutoff = `${cutoffYear}-${cutoffMonth}-${cutoffDay}`;
 
   return docs.filter(d => d.date >= cutoff);
 }
