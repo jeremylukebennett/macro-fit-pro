@@ -19,8 +19,12 @@ export function filterDocsByRange(docs: DailyNutrient[], range: RangeFilter): Da
   const days = parseInt(range);
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - days);
-  const cutoff = cutoffDate.toISOString().split('T')[0];
-  
+  // Use local date format to match document date format (avoids timezone issues)
+  const year = cutoffDate.getFullYear();
+  const month = String(cutoffDate.getMonth() + 1).padStart(2, '0');
+  const day = String(cutoffDate.getDate()).padStart(2, '0');
+  const cutoff = `${year}-${month}-${day}`;
+
   return docs.filter(d => d.date >= cutoff);
 }
 
