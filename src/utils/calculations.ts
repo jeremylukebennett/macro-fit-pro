@@ -18,7 +18,8 @@ export function filterDocsByRange(docs: DailyNutrient[], range: RangeFilter): Da
   
   const days = parseInt(range);
   const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - days);
+  // Subtract (days - 1) so that "7 days" includes exactly 7 calendar days (today + 6 previous)
+  cutoffDate.setDate(cutoffDate.getDate() - (days - 1));
   // Use local date format to match document date format (avoids timezone issues)
   const year = cutoffDate.getFullYear();
   const month = String(cutoffDate.getMonth() + 1).padStart(2, '0');
