@@ -8,34 +8,20 @@ export function computeDailyDeficit(doc: DailyNutrient, defaultCalories: number 
 
 export function filterDocsByRange(docs: DailyNutrient[], range: RangeFilter): DailyNutrient[] {
   if (range === 'all') return docs;
+  if (docs.length === 0) return [];
+
+  const sorted = [...docs].sort((a, b) => b.date.localeCompare(a.date));
+
   if (range === 'prev') {
     // Exclude the most recent entry (by date)
     if (docs.length <= 1) return [];
-    const sorted = [...docs].sort((a, b) => b.date.localeCompare(a.date));
     const mostRecentDate = sorted[0].date;
     return docs.filter(d => d.date !== mostRecentDate);
   }
-  
-  const days = parseInt(range);
 
-  // Use the most recent entry's date as reference, not today
-  // This ensures "7 days" shows 7 entries even if you haven't logged today
-  if (docs.length === 0) return [];
-  const sorted = [...docs].sort((a, b) => b.date.localeCompare(a.date));
-  const mostRecentDate = sorted[0].date;
-
-  // Parse the most recent date and subtract (days - 1) to get exactly N days
-  const [year, month, day] = mostRecentDate.split('-').map(Number);
-  const referenceDate = new Date(year, month - 1, day);
-  referenceDate.setDate(referenceDate.getDate() - (days - 1));
-
-  // Format cutoff in local date format to match document dates
-  const cutoffYear = referenceDate.getFullYear();
-  const cutoffMonth = String(referenceDate.getMonth() + 1).padStart(2, '0');
-  const cutoffDay = String(referenceDate.getDate()).padStart(2, '0');
-  const cutoff = `${cutoffYear}-${cutoffMonth}-${cutoffDay}`;
-
-  return docs.filter(d => d.date >= cutoff);
+  // Return the last N entries (not calendar days)
+  const count = parseInt(range);
+  return sorted.slice(0, count);
 }
 
 export function linearRegressionSlope(sortedDocs: DailyNutrient[], getter: (doc: DailyNutrient) => number): number {
