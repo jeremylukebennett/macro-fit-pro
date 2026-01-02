@@ -10,7 +10,7 @@ export function filterDocsByRange(docs: DailyNutrient[], range: RangeFilter): Da
   if (range === 'all') return docs;
   if (docs.length === 0) return [];
 
-  const sorted = [...docs].sort((a, b) => b.date.localeCompare(a.date));
+  const sorted = [...docs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   if (range === 'prev') {
     // Exclude the most recent entry (by date)

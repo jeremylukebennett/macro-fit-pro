@@ -26,7 +26,7 @@ export default function Dashboard() {
   
   // For 'prev' filter, use the most recent remaining entry's date as reference for rolling calculations
   const referenceDate = rangeFilter === 'prev' && filteredEntries.length > 0 ? (() => {
-    const sorted = [...filteredEntries].sort((a, b) => b.date.localeCompare(a.date));
+    const sorted = [...filteredEntries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     return new Date(sorted[0].date);
   })() : undefined;
 
