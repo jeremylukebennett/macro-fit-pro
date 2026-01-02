@@ -57,8 +57,14 @@ export function EntriesTable({ entries, defaultCalories, onEdit, onDelete, refer
     }
     
     if (typeof aVal === 'string' && typeof bVal === 'string') {
-      return sortDirection === 'asc' 
-        ? aVal.localeCompare(bVal) 
+      // Use Date comparison for date column to handle year boundaries correctly
+      if (sortColumn === 'date') {
+        const aTime = new Date(aVal).getTime();
+        const bTime = new Date(bVal).getTime();
+        return sortDirection === 'asc' ? aTime - bTime : bTime - aTime;
+      }
+      return sortDirection === 'asc'
+        ? aVal.localeCompare(bVal)
         : bVal.localeCompare(aVal);
     }
 
