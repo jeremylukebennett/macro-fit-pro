@@ -1,73 +1,75 @@
-# Welcome to your Lovable project
+# Macro Fit Pro
 
-## Project info
+Macro Fit Pro is a Firebase-backed nutrition tracker for logging daily intake and activity, reviewing trends, and managing tracking goals over time.
 
-**URL**: https://lovable.dev/projects/ed7ec1c5-084c-453e-8a11-e42349d4ee4b
+## Core Features
 
-## How can I edit this code?
+- Email/password and Google authentication
+- Daily nutrition logging (calories, macros, fiber, sodium, drinks, calories burned)
+- Trend cards and chart views for rolling windows (`prev`, `all`, `3`, `7`, `30`)
+- CSV export for the current filtered view
+- Per-user goals, theme settings, and privacy toggles
+- Cycle-based logging with a dedicated **Cycle Menu**:
+  - Start a new cycle
+  - Switch between current cycle, specific cycles, legacy entries, or all history
+  - Set a selected cycle as active
+  - Delete a cycle while preserving entries by moving them to legacy (no cycle)
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- React + TypeScript
+- Vite
+- Tailwind CSS + shadcn/ui
+- Firebase Auth + Firestore
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ed7ec1c5-084c-453e-8a11-e42349d4ee4b) and start prompting.
+## Local Development
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Useful scripts:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+npm run build
+npm run lint
+npm run preview
+```
 
-**Use GitHub Codespaces**
+## Firebase Setup
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Full setup details are in `/Users/jeremybennett/projects/macro-fit-pro/README_SETUP.md`.
 
-## What technologies are used for this project?
+At minimum, ensure:
 
-This project is built with:
+1. Firebase Authentication is enabled (Email/Password and Google if needed).
+2. Firestore is created and security rules from `/Users/jeremybennett/projects/macro-fit-pro/firestore.rules` are published.
+3. Composite index exists for `dailyNutrients` on:
+   - `uid` (Ascending)
+   - `date` (Descending)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Local Auth Domain Notes
 
-## How can I deploy this project?
+If sign-in fails during local development, add local hosts in Firebase:
 
-Simply open [Lovable](https://lovable.dev/projects/ed7ec1c5-084c-453e-8a11-e42349d4ee4b) and click on Share -> Publish.
+- `Authentication` -> `Settings` -> `Authorized domains`
+- Add `localhost`
+- Add `127.0.0.1`
 
-## Can I connect a custom domain to my Lovable project?
+Only add hostnames (no protocol or port).
 
-Yes, you can!
+## Data Model (High Level)
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- `users/{uid}`
+  - theme
+  - targets
+  - activeCycleId
+- `dailyNutrients/{docId}`
+  - uid
+  - cycleId (optional)
+  - date + nutrition metrics
+- `cycles/{docId}`
+  - uid
+  - name
+  - createdAt
