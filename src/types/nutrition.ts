@@ -30,9 +30,15 @@ export interface UserSettings {
   theme: 'light' | 'dark';
   targets: NutrientTargets;
   activeCycleId?: string | null;
+  preferredCycleScope?: string;
 }
 
-export type RangeFilter = 'prev' | 'all' | '3' | '7' | '30';
+export type RangeFilter = 'prev' | 'all' | '3' | '7' | '14' | '30' | 'custom';
+
+export interface CustomDateRange {
+  from?: string;
+  to?: string;
+}
 
 export interface TrendData {
   avgTrend: 'up' | 'down' | 'stable';

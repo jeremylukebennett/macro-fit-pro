@@ -1,4 +1,4 @@
-import { DailyNutrient, NutrientTargets, TrendData, RangeFilter } from '@/types/nutrition';
+import { CustomDateRange, DailyNutrient, NutrientTargets, TrendData, RangeFilter } from '@/types/nutrition';
 
 export function computeDailyDeficit(doc: DailyNutrient, defaultCalories: number = 2000): number {
   const burned = doc.caloriesBurned || defaultCalories;
@@ -6,7 +6,7 @@ export function computeDailyDeficit(doc: DailyNutrient, defaultCalories: number 
   return burned - consumed;
 }
 
-export function filterDocsByRange(docs: DailyNutrient[], range: RangeFilter): DailyNutrient[] {
+export function filterDocsByRange(docs: DailyNutrient[], range: RangeFilter, customDateRange?: CustomDateRange): DailyNutrient[] {
   if (range === 'all') return docs;
   if (docs.length === 0) return [];
 
@@ -17,6 +17,16 @@ export function filterDocsByRange(docs: DailyNutrient[], range: RangeFilter): Da
     if (docs.length <= 1) return [];
     const mostRecentDate = sorted[0].date;
     return docs.filter(d => d.date !== mostRecentDate);
+  }
+
+  if (range === 'custom') {
+    const from = customDateRange?.from;
+    const to = customDateRange?.to;
+
+    if (!from && !to) return docs;
+    if (from && !to) return docs.filter((d) => d.date >= from);
+    if (!from && to) return docs.filter((d) => d.date <= to);
+    return docs.filter((d) => d.date >= from! && d.date <= to!);
   }
 
   // Return the last N entries (not calendar days)

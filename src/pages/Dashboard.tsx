@@ -1,11 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNutritionData } from '@/hooks/useNutritionData';
 import { useCycles } from '@/hooks/useCycles';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
@@ -23,10 +27,17 @@ import { DayModal } from '@/components/DayModal';
 import { TargetsModal } from '@/components/TargetsModal';
 import { TrendsCards } from '@/components/TrendsCards';
 import { NutritionCharts } from '@/components/NutritionCharts';
-import { DailyNutrient, RangeFilter, NutrientTargets } from '@/types/nutrition';
+import { CustomDateRange, DailyNutrient, RangeFilter, NutrientTargets } from '@/types/nutrition';
 import { filterDocsByRange, exportToCSV } from '@/utils/calculations';
 import { toast } from 'sonner';
-import { Plus, Target, Download, LogOut, Moon, Sun, Apple, Settings, Trash2 } from 'lucide-react';
+import { Plus, Target, Download, LogOut, Moon, Sun, Apple, Settings, Trash2, CalendarDays } from 'lucide-react';
+
+function toLocalDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -40,6 +51,8 @@ export default function Dashboard() {
   const [cycleScope, setCycleScope] = useState<string>('all');
   const [scopeInitialized, setScopeInitialized] = useState(false);
   const [isCycleMenuOpen, setIsCycleMenuOpen] = useState(false);
+  const [isCustomRangeOpen, setIsCustomRangeOpen] = useState(false);
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
   const [newCycleName, setNewCycleName] = useState('');
   const [isDeleteCycleDialogOpen, setIsDeleteCycleDialogOpen] = useState(false);
 
@@ -48,10 +61,27 @@ export default function Dashboard() {
   const hasLegacyEntries = dailyNutrients.some((entry) => !entry.cycleId);
 
   useEffect(() => {
-    if (!userSettings || scopeInitialized) return;
-    setCycleScope(activeCycleId ? 'active' : 'all');
+    if (!userSettings || cyclesLoading || scopeInitialized) return;
+
+    const preferredScope = userSettings.preferredCycleScope;
+    const fallbackScope = activeCycleId ? 'active' : 'all';
+
+    let nextScope = fallbackScope;
+    if (preferredScope === 'all' || preferredScope === 'legacy') {
+      nextScope = preferredScope;
+    } else if (preferredScope === 'active') {
+      nextScope = activeCycleId ? 'active' : fallbackScope;
+    } else if (preferredScope?.startsWith('cycle:')) {
+      const cycleId = preferredScope.replace('cycle:', '');
+      nextScope = cycles.some((cycle) => cycle.id === cycleId) ? preferredScope : fallbackScope;
+    }
+
+    setCycleScope(nextScope);
     setScopeInitialized(true);
-  }, [userSettings, scopeInitialized, activeCycleId]);
+    if (preferredScope && preferredScope !== nextScope) {
+      void updateUserSettings({ preferredCycleScope: nextScope });
+    }
+  }, [userSettings, cyclesLoading, scopeInitialized, activeCycleId, cycles, updateUserSettings]);
 
   const entriesInScope = useMemo(() => {
     if (cycleScope === 'all') return dailyNutrients;
@@ -69,7 +99,12 @@ export default function Dashboard() {
     return dailyNutrients;
   }, [dailyNutrients, cycleScope, activeCycleId]);
 
-  const filteredEntries = filterDocsByRange(entriesInScope, rangeFilter);
+  const customDateRange = useMemo<CustomDateRange>(() => ({
+    from: customRange?.from ? toLocalDateString(customRange.from) : undefined,
+    to: customRange?.to ? toLocalDateString(customRange.to) : undefined,
+  }), [customRange]);
+
+  const filteredEntries = filterDocsByRange(entriesInScope, rangeFilter, customDateRange);
 
   // For 'prev' filter, use the most recent remaining entry's date as reference for rolling calculations
   const referenceDate = rangeFilter === 'prev' && filteredEntries.length > 0 ? (() => {
@@ -97,6 +132,41 @@ export default function Dashboard() {
     if (selectedCycle) return `Viewing cycle: ${selectedCycle.name}`;
     return 'Viewing selected scope';
   })();
+
+  const customRangeLabel = (() => {
+    if (!customRange?.from && !customRange?.to) return 'CUSTOM';
+    if (customRange.from && !customRange.to) return `FROM ${format(customRange.from, 'MMM d')}`;
+    if (!customRange.from && customRange.to) return `UNTIL ${format(customRange.to, 'MMM d')}`;
+    return `${format(customRange.from!, 'MMM d')} - ${format(customRange.to!, 'MMM d')}`;
+  })();
+
+  const entryDateSet = useMemo(() => new Set(entriesInScope.map((entry) => entry.date)), [entriesInScope]);
+
+  const persistCycleScopePreference = useCallback(async (nextScope: string) => {
+    if (!userSettings || userSettings.preferredCycleScope === nextScope) return;
+    try {
+      await updateUserSettings({ preferredCycleScope: nextScope });
+    } catch (error) {
+      toast.error('Failed to save default cycle view');
+    }
+  }, [userSettings, updateUserSettings]);
+
+  const handleCycleScopeChange = useCallback((nextScope: string) => {
+    setCycleScope(nextScope);
+    void persistCycleScopePreference(nextScope);
+  }, [persistCycleScopePreference]);
+
+  useEffect(() => {
+    if (!scopeInitialized) return;
+    if (!cycleScope.startsWith('cycle:')) return;
+
+    const cycleId = cycleScope.replace('cycle:', '');
+    if (cycles.some((cycle) => cycle.id === cycleId)) return;
+
+    const fallbackScope = activeCycleId ? 'active' : 'all';
+    setCycleScope(fallbackScope);
+    void persistCycleScopePreference(fallbackScope);
+  }, [scopeInitialized, cycleScope, cycles, activeCycleId, persistCycleScopePreference]);
 
   useEffect(() => {
     if (!isCycleMenuOpen) return;
@@ -179,7 +249,7 @@ export default function Dashboard() {
         return;
       }
 
-      await updateUserSettings({ activeCycleId: newCycle.id });
+      await updateUserSettings({ activeCycleId: newCycle.id, preferredCycleScope: 'active' });
       setCycleScope('active');
       setScopeInitialized(true);
       setIsCycleMenuOpen(false);
@@ -194,7 +264,7 @@ export default function Dashboard() {
     if (!selectedCycleId) return;
 
     try {
-      await updateUserSettings({ activeCycleId: selectedCycleId });
+      await updateUserSettings({ activeCycleId: selectedCycleId, preferredCycleScope: 'active' });
       setCycleScope('active');
       setIsCycleMenuOpen(false);
       toast.success('Active cycle updated');
@@ -210,7 +280,9 @@ export default function Dashboard() {
       const movedEntriesCount = await deleteCycle(selectedCycleId);
 
       if (selectedCycleId === activeCycleId) {
-        await updateUserSettings({ activeCycleId: null });
+        await updateUserSettings({ activeCycleId: null, preferredCycleScope: 'all' });
+      } else {
+        await persistCycleScopePreference('all');
       }
 
       setCycleScope('all');
@@ -223,6 +295,21 @@ export default function Dashboard() {
       );
     } catch (error) {
       toast.error('Failed to delete cycle');
+    }
+  };
+
+  const handleQuickRangeChange = (nextRange: RangeFilter) => {
+    setRangeFilter(nextRange);
+    if (nextRange !== 'custom') {
+      setIsCustomRangeOpen(false);
+    }
+  };
+
+  const handleCustomRangeSelect = (nextRange: DateRange | undefined) => {
+    setCustomRange(nextRange);
+    setRangeFilter('custom');
+    if (nextRange?.from && nextRange?.to) {
+      setIsCustomRangeOpen(false);
     }
   };
 
@@ -313,7 +400,7 @@ export default function Dashboard() {
 
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Current View</p>
-                  <Select value={cycleScope} onValueChange={setCycleScope}>
+                  <Select value={cycleScope} onValueChange={handleCycleScopeChange}>
                     <SelectTrigger className="h-10">
                       <SelectValue />
                     </SelectTrigger>
@@ -322,7 +409,7 @@ export default function Dashboard() {
                         <SelectItem value="active">Current Cycle: {activeCycle?.name ?? 'Unknown Cycle'}</SelectItem>
                       )}
                       <SelectItem value="all">All History</SelectItem>
-                      {hasLegacyEntries && <SelectItem value="legacy">Legacy Entries (No Cycle)</SelectItem>}
+                      {(hasLegacyEntries || cycleScope === 'legacy') && <SelectItem value="legacy">Legacy Entries (No Cycle)</SelectItem>}
                       {cycles.map((cycle) => (
                         <SelectItem key={cycle.id} value={`cycle:${cycle.id}`}>
                           {cycle.name}{cycle.id === activeCycleId ? ' (Current)' : ''}
@@ -377,19 +464,62 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              {(['prev', 'all', '3', '7', '30'] as RangeFilter[]).map((range) => (
+              {(['prev', 'all', '3', '7', '14', '30'] as RangeFilter[]).map((range) => (
                 <Button
                   key={range}
                   variant={rangeFilter === range ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setRangeFilter(range)}
+                  onClick={() => handleQuickRangeChange(range)}
                 >
                   {range === 'prev' ? 'PREV' : range === 'all' ? 'ALL' : `${range}D`}
                 </Button>
               ))}
+              <Popover open={isCustomRangeOpen} onOpenChange={setIsCustomRangeOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={rangeFilter === 'custom' ? 'default' : 'outline'}
+                    size="sm"
+                  >
+                    <CalendarDays className="w-4 h-4 mr-2" />
+                    {customRangeLabel}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-auto p-0">
+                  <div className="border-b p-3">
+                    <p className="text-sm font-medium">Custom Date Range</p>
+                    <p className="text-xs text-muted-foreground">Days with no entries are muted, but still selectable.</p>
+                  </div>
+                  <Calendar
+                    mode="range"
+                    selected={customRange}
+                    onSelect={handleCustomRangeSelect}
+                    numberOfMonths={2}
+                    modifiers={{ missing: (date) => !entryDateSet.has(toLocalDateString(date)) }}
+                    modifiersClassNames={{ missing: 'text-muted-foreground/40' }}
+                    initialFocus
+                  />
+                  <div className="border-t p-3 flex justify-between gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setCustomRange(undefined);
+                        setRangeFilter('all');
+                        setIsCustomRangeOpen(false);
+                      }}
+                    >
+                      Clear
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setIsCustomRangeOpen(false)}>
+                      Done
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
               <span className="text-xs text-muted-foreground ml-2">
                 {filteredEntries.length} entries
                 {rangeFilter === 'prev' && ' (excluding latest)'}
+                {rangeFilter === 'custom' && customDateRange.from && customDateRange.to && ` (${customDateRange.from} to ${customDateRange.to})`}
               </span>
             </div>
           </div>
