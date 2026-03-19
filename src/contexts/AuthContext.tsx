@@ -46,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             theme: 'light',
             targets: defaultTargets,
             activeCycleId: null,
+            preferredCycleScope: 'all',
           };
           await setDoc(doc(db, 'users', user.uid), initialSettings);
           setUserSettings(initialSettings);
